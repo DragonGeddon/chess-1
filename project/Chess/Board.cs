@@ -126,35 +126,130 @@ namespace Chess
             return fitness;
         }
 
-        public void SetInitialPlacement()
+        public void SetInitialPlacement(bool chess960)
         {
             for (int i = 0; i < 8; i++)
             {
                 SetPiece(Piece.PAWN, Player.WHITE, i, 1);
                 SetPiece(Piece.PAWN, Player.BLACK, i, 6);
             }
+            if (chess960)
+            {
+                List<int> places = new List<int>() { 0, 1, 2, 3, 4, 5, 6, 7};
+                List<int> takenPlaces = new List<int>();
+                List<Piece> pieces = new List<Piece>() { Piece.ROOK, Piece.ROOK, Piece.KING, Piece.BISHOP, Piece.BISHOP, Piece.KNIGHT, Piece.KNIGHT, Piece.QUEEN };
+                Random rng = new Random();
+                int evenOdd = -1;
+                int holder = -1;
+                int rookHigh = -1;
+                int rookLow = -1;
+                foreach (Piece piece in pieces)
+                {
+                    bool loop = true;
+                    do
+                    {
+                        holder = rng.Next(places.Count);
+                        if (piece == Piece.BISHOP)
+                        {
+                            if (evenOdd == -1)
+                            {
+                                SetPiece(piece, Player.BLACK, places[holder], 7);
+                                SetPiece(piece, Player.WHITE, places[holder], 0);
+                                evenOdd = places[holder] % 2;
+                                loop = false;
+                            }
+                            else if (evenOdd % 2 == 0)
+                            {
+                                if (places[holder] % 2 == 1)
+                                {
+                                    SetPiece(piece, Player.BLACK, places[holder], 7);
+                                    SetPiece(piece, Player.WHITE, places[holder], 0);
+                                    loop = false;
+                                }
+                            }
+                            else
+                            {
+                                if (places[holder] % 2 == 0)
+                                {
+                                    SetPiece(piece, Player.BLACK, places[holder], 7);
+                                    SetPiece(piece, Player.WHITE, places[holder], 0);
+                                    loop = false;
+                                }
+                            }
+                        }
+                        else if(piece == Piece.ROOK)
+                        {
+                            if(rookHigh == -1 && rookLow == -1)
+                            {
+                                SetPiece(piece, Player.BLACK, places[holder], 7);
+                                SetPiece(piece, Player.WHITE, places[holder], 0);
+                                rookHigh = places[holder];
+                                loop = false;
+                            }
+                            else
+                            {
+                                if (places[holder] > rookHigh + 1)
+                                {
+                                    SetPiece(piece, Player.BLACK, places[holder], 7);
+                                    SetPiece(piece, Player.WHITE, places[holder], 0);
+                                    rookLow = rookHigh;
+                                    rookHigh = places[holder];
+                                    loop = false;
+                                } else if(places[holder] < rookHigh - 1)
+                                {
+                                    SetPiece(piece, Player.BLACK, places[holder], 7);
+                                    SetPiece(piece, Player.WHITE, places[holder], 0);
+                                    rookLow = places[holder];
+                                    loop = false;
+                                }
+                            }
+                        }
+                        else if(piece == Piece.KING)
+                        {
+                            if(places[holder] > rookLow && places[holder] < rookHigh)
+                            {
+                                SetPiece(piece, Player.BLACK, places[holder], 7);
+                                SetPiece(piece, Player.WHITE, places[holder], 0);
+                                Kings[Player.BLACK] = new position_t(places[holder], 7);
+                                Kings[Player.WHITE] = new position_t(places[holder], 0);
+                                loop = false;
+                            }
+                        }
+                        else
+                        {
+                            SetPiece(piece, Player.BLACK, places[holder], 7);
+                            SetPiece(piece, Player.WHITE, places[holder], 0);
+                            loop = false;
+                        }
+                    } while (loop);
+                    places.RemoveAt(holder);
+                }
 
-            SetPiece(Piece.ROOK, Player.WHITE, 0, 0);
-            SetPiece(Piece.ROOK, Player.WHITE, 7, 0);
-            SetPiece(Piece.ROOK, Player.BLACK, 0, 7);
-            SetPiece(Piece.ROOK, Player.BLACK, 7, 7);
+            }
+            else
+            {
+                SetPiece(Piece.ROOK, Player.WHITE, 0, 0);
+                SetPiece(Piece.ROOK, Player.WHITE, 7, 0);
+                SetPiece(Piece.ROOK, Player.BLACK, 0, 7);
+                SetPiece(Piece.ROOK, Player.BLACK, 7, 7);
 
-            SetPiece(Piece.KNIGHT, Player.WHITE, 1, 0);
-            SetPiece(Piece.KNIGHT, Player.WHITE, 6, 0);
-            SetPiece(Piece.KNIGHT, Player.BLACK, 1, 7);
-            SetPiece(Piece.KNIGHT, Player.BLACK, 6, 7);
+                SetPiece(Piece.KNIGHT, Player.WHITE, 1, 0);
+                SetPiece(Piece.KNIGHT, Player.WHITE, 6, 0);
+                SetPiece(Piece.KNIGHT, Player.BLACK, 1, 7);
+                SetPiece(Piece.KNIGHT, Player.BLACK, 6, 7);
 
-            SetPiece(Piece.BISHOP, Player.WHITE, 2, 0);
-            SetPiece(Piece.BISHOP, Player.WHITE, 5, 0);
-            SetPiece(Piece.BISHOP, Player.BLACK, 2, 7);
-            SetPiece(Piece.BISHOP, Player.BLACK, 5, 7);
+                SetPiece(Piece.BISHOP, Player.WHITE, 2, 0);
+                SetPiece(Piece.BISHOP, Player.WHITE, 5, 0);
+                SetPiece(Piece.BISHOP, Player.BLACK, 2, 7);
+                SetPiece(Piece.BISHOP, Player.BLACK, 5, 7);
 
-            SetPiece(Piece.KING, Player.WHITE, 4, 0);
-            SetPiece(Piece.KING, Player.BLACK, 4, 7);
-            Kings[Player.WHITE] = new position_t(4, 0);
-            Kings[Player.BLACK] = new position_t(4, 7);
-            SetPiece(Piece.QUEEN, Player.WHITE, 3, 0);
-            SetPiece(Piece.QUEEN, Player.BLACK, 3, 7);
+                SetPiece(Piece.KING, Player.WHITE, 4, 0);
+                SetPiece(Piece.KING, Player.BLACK, 4, 7);
+                Kings[Player.WHITE] = new position_t(4, 0);
+                Kings[Player.BLACK] = new position_t(4, 7);
+                SetPiece(Piece.QUEEN, Player.WHITE, 3, 0);
+                SetPiece(Piece.QUEEN, Player.BLACK, 3, 7);
+            }
         }
 
         public void SetPiece(Piece piece, Player player, int letter, int number)
